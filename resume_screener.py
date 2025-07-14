@@ -1,147 +1,17 @@
-# import streamlit as st
-# import PyPDF2
-# import docx
-# from nltk.corpus import stopwords
-# import re # रेगुलर एक्सप्रेशन के लिए
-
-# # --- 1. टेक्स्ट एक्सट्रैक्शन फ़ंक्शंस ---
-
-# def extract_text_from_pdf(pdf_file):
-#     """PDF फ़ाइल से टेक्स्ट निकालता है।"""
-#     text = ""
-#     try:
-#         pdf_reader = PyPDF2.PdfReader(pdf_file)
-#         for page in pdf_reader.pages:
-#             text += page.extract_text() or "" # अगर पेज खाली हो तो खाली स्ट्रिंग जोड़ें
-#     except Exception as e:
-#         st.error(f"PDF से टेक्स्ट निकालने में त्रुटि: {e}")
-#     return text
-
-# def extract_text_from_docx(docx_file):
-#     """DOCX फ़ाइल से टेक्स्ट निकालता है।"""
-#     text = ""
-#     try:
-#         doc = docx.Document(docx_file)
-#         for para in doc.paragraphs:
-#             text += para.text + "\n"
-#     except Exception as e:
-#         st.error(f"DOCX से टेक्स्ट निकालने में त्रुटि: {e}")
-#     return text
-
-# def extract_text_from_txt(txt_file):
-#     """TXT फ़ाइल से टेक्स्ट निकालता है।"""
-#     return txt_file.read().decode("utf-8")
-
-# # --- 2. टेक्स्ट प्रोसेसिंग और कीवर्ड मैचिंग ---
-
-# def preprocess_text(text):
-#     """टेक्स्ट को लोअरकेस करता है, गैर-अक्षर/संख्या वर्णों को हटाता है, स्टॉपवर्ड्स हटाता है।"""
-#     text = text.lower()
-#     # केवल अक्षर, संख्या और स्पेस रखें
-#     text = re.sub(r'[^a-z0-9\s]', '', text)
-#     words = text.split()
-#     # स्टॉपवर्ड्स हटाना (वैकल्पिक, यदि आप चाहते हैं तो हटा सकते हैं)
-#     # stop_words = set(stopwords.words('english'))
-#     # words = [word for word in words if word not in stop_words]
-#     return " ".join(words)
-
-# def calculate_keyword_match_score(resume_text, job_description_keywords):
-#     """
-#     रिज्यूमे टेक्स्ट में जॉब डिस्क्रिप्शन के कीवर्ड्स को ढूंढता है
-#     और एक मैच स्कोर की गणना करता है।
-#     """
-#     score = 0
-#     matched_keywords = []
-
-#     # सुनिश्चित करें कि कीवर्ड्स और रिज्यूमे टेक्स्ट दोनों संसाधित (processed) हों
-#     processed_resume_text = preprocess_text(resume_text)
-#     processed_jd_keywords = [preprocess_text(kw) for kw in job_description_keywords if kw.strip()] # खाली कीवर्ड हटा दें
-
-#     # प्रत्येक आवश्यक कीवर्ड के लिए देखें कि क्या यह रिज्यूमे में मौजूद है
-#     for keyword in processed_jd_keywords:
-#         if keyword in processed_resume_text:
-#             score += 1
-#             matched_keywords.append(keyword)
-#     return score, matched_keywords
-
-# # --- Streamlit UI ---
-
-# st.set_page_config(layout="wide")
-# st.title("👨‍💻 रिज्यूमे स्क्रीनिंग ऐप (कीवर्ड मैचिंग)")
-# st.markdown("---")
-
-# st.subheader("1. जॉब आवश्यकताएं दर्ज करें")
-# job_keywords_input = st.text_area(
-#     "जॉब के लिए आवश्यक स्किल्स/कीवर्ड्स को कॉमा या नई लाइन से अलग करके दर्ज करें:",
-#     "Python, Machine Learning, Data Science, SQL, Cloud, Communication, Problem Solving"
-# )
-# # कीवर्ड्स को लिस्ट में विभाजित करें और खाली स्ट्रिंग हटा दें
-# required_keywords = [kw.strip() for kw in job_keywords_input.split(',') if kw.strip()]
-# if not required_keywords:
-#     st.warning("कृपया जॉब कीवर्ड्स दर्ज करें।")
-# else:
-#     st.info(f"**पहचाने गए कीवर्ड्स:** {', '.join(required_keywords)}")
-
-# st.subheader("2. रिज्यूमे अपलोड करें")
-# uploaded_resumes = st.file_uploader(
-#     "PDF, DOCX या TXT फॉर्मेट में रिज्यूमे अपलोड करें",
-#     type=["pdf", "docx", "txt"],
-#     accept_multiple_files=True
-# )
-
-# if uploaded_resumes and required_keywords:
-#     st.markdown("---")
-#     st.subheader("3. स्क्रीनिंग परिणाम")
-
-#     results = []
-#     for uploaded_file in uploaded_resumes:
-#         file_name = uploaded_file.name
-#         file_type = file_name.split('.')[-1].lower()
-#         resume_text = ""
-
-#         with st.spinner(f"'{file_name}' से टेक्स्ट निकाल रहा है..."):
-#             if file_type == "pdf":
-#                 resume_text = extract_text_from_pdf(uploaded_file)
-#             elif file_type == "docx":
-#                 resume_text = extract_text_from_docx(uploaded_file)
-#             elif file_type == "txt":
-#                 resume_text = extract_text_from_txt(uploaded_file)
-#             else:
-#                 st.warning(f"समर्थित फ़ाइल प्रकार नहीं: {file_type} ({file_name})")
-#                 continue
-
-#         if resume_text:
-#             score, matched_kws = calculate_keyword_match_score(resume_text, required_keywords)
-#             results.append({
-#                 "file_name": file_name,
-#                 "score": score,
-#                 "matched_keywords": matched_kws,
-#                 "total_required_keywords": len(required_keywords)
-#             })
-#         else:
-#             st.warning(f"'{file_name}' से टेक्स्ट नहीं निकाल सका।")
-
-#     # परिणामों को स्कोर के आधार पर सॉर्ट करें (उच्चतम स्कोर पहले)
-#     results.sort(key=lambda x: x["score"], reverse=True)
-
-#     if results:
-#         for i, res in enumerate(results):
-#             st.success(f"### {i+1}. {res['file_name']}")
-#             st.write(f"**मैच स्कोर:** {res['score']} / {res['total_required_keywords']}")
-#             if res['matched_keywords']:
-#                 st.write(f"**मैच हुए कीवर्ड्स:** {', '.join(res['matched_keywords'])}")
-#             else:
-#                 st.write("**कोई कीवर्ड मैच नहीं हुआ।**")
-#             st.markdown("---")
-#     else:
-#         st.info("कोई रिज्यूमे अपलोड नहीं किया गया या संसाधित नहीं किया जा सका।")
-
-
 import streamlit as st
 import PyPDF2
 import docx
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords # Import stopwords first
+import nltk # Import nltk
 import re # For regular expressions
+
+# Download NLTK stopwords data if it's not already downloaded
+# This ensures the data is available during deployment on Streamlit Cloud
+try:
+    stopwords.words('english') # Check if stopwords data exists
+except LookupError:
+    nltk.download('stopwords')
+    st.success("NLTK 'stopwords' data downloaded successfully!") # One-time message on Streamlit
 
 # --- Custom CSS for a more colorful and responsive UI with animations ---
 st.markdown(
