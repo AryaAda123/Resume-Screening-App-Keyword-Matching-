@@ -17,6 +17,27 @@ except LookupError:
 st.markdown(
     """
     <style>
+    /* Hide Streamlit header (logo and "Made with Streamlit" text) */
+    [data-testid="stHeader"] {
+        display: none !important;
+    }
+
+    /* Hide Streamlit footer ("Made with Streamlit" text at the bottom) */
+    [data-testid="stFooter"] {
+        display: none !important;
+    }
+
+    /* Hide Streamlit's main menu button (hamburger icon) if necessary
+       Caution: This might make it difficult to access the sidebar if there's no other way */
+    /* [data-testid="stSidebarNav"] {
+        display: none !important;
+    } */
+
+    /* Hide the Deploy button (if it still appears after hiding the header) */
+    .stDeployButton {
+        display: none !important;
+    }
+
     /* General container padding */
     .reportview-container .main .block-container {
         padding-top: 2rem;
@@ -241,7 +262,13 @@ def calculate_keyword_match_score(resume_text, job_description_keywords):
 
 # --- Streamlit UI ---
 
-st.set_page_config(layout="wide")
+# Change page_title and page_icon here
+st.set_page_config(
+    layout="wide",
+    page_title="Resume Screener App", # Set your preferred title here
+    page_icon="🔍" # Set your preferred emoji (e.g., "✨", "🚀", "🔍") or URL here
+)
+
 st.title("👨‍💻 Resume Screening App (Keyword Matching)")
 st.markdown("---")
 
