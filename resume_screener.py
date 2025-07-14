@@ -265,7 +265,7 @@ def calculate_keyword_match_score(resume_text, job_description_keywords):
 # Change page_title and page_icon here
 st.set_page_config(
     layout="wide",
-    page_title="Resume Screener App", # Set your preferred title here
+    page_title="My Resume Screener", # Set your preferred title here
     page_icon="🔍" # Set your preferred emoji (e.g., "✨", "🚀", "🔍") or URL here
 )
 
